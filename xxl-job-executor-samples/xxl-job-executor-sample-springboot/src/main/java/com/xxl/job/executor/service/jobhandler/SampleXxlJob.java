@@ -1,7 +1,9 @@
 package com.xxl.job.executor.service.jobhandler;
 
+import com.xxl.job.core.biz.model.ChildExecutorParam;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
+import com.xxl.job.core.util.GsonTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,7 +38,8 @@ public class SampleXxlJob {
      */
     @XxlJob("demoJobHandler")
     public void demoJobHandler() throws Exception {
-        XxlJobHelper.log("XXL-JOB, Hello World.");
+        String param = XxlJobHelper.getJobParam();
+        XxlJobHelper.log("XXL-JOB, Hello World. param:{}", param);
 
         for (int i = 0; i < 5; i++) {
             XxlJobHelper.log("beat at:" + i);
@@ -55,7 +58,8 @@ public class SampleXxlJob {
         // 分片参数
         int shardIndex = XxlJobHelper.getShardIndex();
         int shardTotal = XxlJobHelper.getShardTotal();
-
+        String jobParam = XxlJobHelper.getJobParam();
+        System.out.println(jobParam);
         XxlJobHelper.log("分片参数：当前分片序号 = {}, 总分片数 = {}", shardIndex, shardTotal);
 
         // 业务逻辑
@@ -66,6 +70,9 @@ public class SampleXxlJob {
                 XxlJobHelper.log("第 {} 片, 忽略", i);
             }
         }
+        ChildExecutorParam childExecutorParam = new ChildExecutorParam(false, "{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
+        String param = GsonTool.toJson(childExecutorParam);
+        XxlJobHelper.handleSuccess(param);
 
     }
 
