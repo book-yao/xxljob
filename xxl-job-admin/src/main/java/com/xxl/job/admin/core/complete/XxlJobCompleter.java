@@ -6,6 +6,8 @@ import com.xxl.job.admin.core.model.XxlJobLog;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
+import com.xxl.job.admin.core.util.JacksonUtil;
+import com.xxl.job.core.biz.model.ChildExecutorParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobContext;
 import org.slf4j.Logger;
@@ -63,7 +65,13 @@ public class XxlJobCompleter {
                         }
 
                         // trigger child job
-                        JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null, null);
+//                        JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null, null);
+                        String executorParam = null;
+                        ChildExecutorParam childExecutorParam = JacksonUtil.readValue(xxlJobLog.getHandleMsg(), ChildExecutorParam.class);
+                        if(childExecutorParam != null && childExecutorParam.isApply()){
+                            executorParam = childExecutorParam.getParam();
+                        }
+                        JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, executorParam, null);
                         ReturnT<String> triggerChildResult = ReturnT.SUCCESS;
 
                         // add msg

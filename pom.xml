@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xuxueli</groupId>
 	<artifactId>xxl-job</artifactId>
-	<version>2.5.0</version>
+	<version>2.5.0.1</version>
 	<packaging>pom</packaging>
 
 	<name>${project.artifactId}</name>
@@ -117,33 +117,45 @@
 						</executions>
 					</plugin>
 					<!-- GPG -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven-gpg-plugin.version}</version>
-						<configuration>
-							<useAgent>false</useAgent>
-						</configuration>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                        <version>${maven-gpg-plugin.version}</version>-->
+<!--						<configuration>-->
+<!--							<useAgent>false</useAgent>-->
+<!--						</configuration>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <phase>verify</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>sign</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
 				</plugins>
 			</build>
+<!--			<distributionManagement>-->
+<!--				<snapshotRepository>-->
+<!--					<id>oss</id>-->
+<!--					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>-->
+<!--				</snapshotRepository>-->
+<!--				<repository>-->
+<!--					<id>oss</id>-->
+<!--					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
+<!--				</repository>-->
+<!--			</distributionManagement>-->
 			<distributionManagement>
-				<snapshotRepository>
-					<id>oss</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-				</snapshotRepository>
+				<!-- 发布到发行版本的仓库中，即正式版本仓库 -->
 				<repository>
-					<id>oss</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<id>its-release</id>
+					<url>http://172.20.41.201:8082/repository/its-release</url>
 				</repository>
+				<!-- 发布到快照版本的仓库中，即开发版本仓库 -->
+				<snapshotRepository>
+					<id>its-snapshot</id>
+					<url>http://172.20.41.201:8082/repository/its-snapshot</url>
+				</snapshotRepository>
 			</distributionManagement>
 		</profile>
 	</profiles>
