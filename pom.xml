@@ -144,16 +144,18 @@
 <!--					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
 <!--				</repository>-->
 <!--			</distributionManagement>-->
-				<distributionManagement>
-					<snapshotRepository>
-						<id>group</id>
-						<url>http://172.20.41.201:8082/repository/PublicRepositories/</url>
-					</snapshotRepository>
-					<repository>
-						<id>group</id>
-						<url>http://172.20.41.201:8082/repository/PublicRepositories/</url>
-					</repository>
-				</distributionManagement>
+			<distributionManagement>
+				<!-- 发布到发行版本的仓库中，即正式版本仓库 -->
+				<repository>
+					<id>its-release</id>
+					<url>http://172.20.41.201:8082/repository/its-release</url>
+				</repository>
+				<!-- 发布到快照版本的仓库中，即开发版本仓库 -->
+				<snapshotRepository>
+					<id>its-snapshot</id>
+					<url>http://172.20.41.201:8082/repository/its-snapshot</url>
+				</snapshotRepository>
+			</distributionManagement>
 		</profile>
 	</profiles>
 
