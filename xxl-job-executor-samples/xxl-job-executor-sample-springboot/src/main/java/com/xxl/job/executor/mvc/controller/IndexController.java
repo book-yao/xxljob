@@ -19,16 +19,5 @@ public class IndexController {
         return "xxl job executor running.";
     }
 
-    @RequestMapping("/trigger")
-    @ResponseBody
-    String index2( ) {
-        ExecutorBizClient client = new ExecutorBizClient("http://127.0.0.1:8080/xxl-job-admin", "supconit");
-
-        TriggerParam param = new TriggerParam();
-        param.setExecutorHandler("shardingJobHandler");
-        param.setExecutorParams("111,2222");
-        ReturnT<String> run = client.run(param);
-        return run.getMsg();
-    }
 
 }

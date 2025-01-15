@@ -65,10 +65,13 @@ public class XxlJobCompleter {
                         }
 
                         // trigger child job
-//                        JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null, null);
-                        String executorParam = null;
                         ChildExecutorParam childExecutorParam = JacksonUtil.readValue(xxlJobLog.getHandleMsg(), ChildExecutorParam.class);
-                        if(childExecutorParam != null && childExecutorParam.isApply()){
+                        if(childExecutorParam != null && childExecutorParam.isNonExecChildJob()){
+                            logger.info(">>>>>>>>>>> xxl-job, XxlJobCompleter-finishJob ignore childJobId,  parentJobId {} command non exec childJob.", xxlJobLog.getJobId());
+                            continue;
+                        }
+                        String executorParam = null;
+                        if(childExecutorParam != null && childExecutorParam.isParamApply()){
                             executorParam = childExecutorParam.getParam();
                         }
                         JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, executorParam, null);

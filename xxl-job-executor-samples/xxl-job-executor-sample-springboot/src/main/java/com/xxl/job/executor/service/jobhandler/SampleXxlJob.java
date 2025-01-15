@@ -1,7 +1,10 @@
 package com.xxl.job.executor.service.jobhandler;
 
 import com.xxl.job.core.biz.model.ChildExecutorParam;
+import com.xxl.job.core.biz.model.CustomTriggerParam;
+import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
+import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import com.xxl.job.core.util.GsonTool;
 import org.slf4j.Logger;
@@ -70,9 +73,16 @@ public class SampleXxlJob {
                 XxlJobHelper.log("第 {} 片, 忽略", i);
             }
         }
-        ChildExecutorParam childExecutorParam = new ChildExecutorParam(false, "{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
-        String param = GsonTool.toJson(childExecutorParam);
-        XxlJobHelper.handleSuccess(param);
+//        ChildExecutorParam childExecutorParam = new ChildExecutorParam(false, "{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
+//        String param = GsonTool.toJson(childExecutorParam);
+//        XxlJobHelper.handleSuccess();
+        CustomTriggerParam customTriggerParam = new CustomTriggerParam();
+//        customTriggerParam.setJobId(1);
+        customTriggerParam.setExecutorParams("asdasd");
+        customTriggerParam.setExecutorHandler("demoJobHandler");
+        customTriggerParam.setAppName("xxl-job-executor-sample");
+        ReturnT<String> stringReturnT = XxlJobExecutor.triggerJob(customTriggerParam);
+        logger.info("triggerJob returnT:{}", stringReturnT);
 
     }
 

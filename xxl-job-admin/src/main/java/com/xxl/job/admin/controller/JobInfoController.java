@@ -11,6 +11,7 @@ import com.xxl.job.admin.core.scheduler.ScheduleTypeEnum;
 import com.xxl.job.admin.core.thread.JobScheduleHelper;
 import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.admin.dao.XxlJobGroupDao;
+import com.xxl.job.admin.dao.XxlJobInfoDao;
 import com.xxl.job.admin.service.XxlJobService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.enums.ExecutorBlockStrategyEnum;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -39,6 +41,8 @@ public class JobInfoController {
 
 	@Resource
 	private XxlJobGroupDao xxlJobGroupDao;
+	@Resource
+	private XxlJobInfoDao xxlJobInfoDao;
 	@Resource
 	private XxlJobService xxlJobService;
 	
@@ -123,6 +127,40 @@ public class JobInfoController {
 		XxlJobUser loginUser = PermissionInterceptor.getLoginUser(request);
 		// trigger
 		return xxlJobService.trigger(loginUser, id, executorParam, addressList);
+	}
+
+	@RequestMapping("/triggerWithJobHandler")
+	@ResponseBody
+	public ReturnT<String> triggerJobWithJobHandler(HttpServletRequest request, String appName, String executorHandler, String executorParam, String addressList) {
+		// login user
+		XxlJobUser loginUser = PermissionInterceptor.getLoginUser(request);
+		List<XxlJobGroup> all = xxlJobGroupDao.findAll();
+		if(CollectionUtils.isEmpty(all)){
+			return new ReturnT<>(ReturnT.FAIL_CODE, "appName not found");
+		}
+		List<XxlJobInfo> xxlJobInfos = xxlJobInfoDao.listJobsByExecutorHandler(executorHandler);
+		if(CollectionUtils.isEmpty(xxlJobInfos)){
+			return new ReturnT<>(ReturnT.FAIL_CODE, "jobInfo not found");
+		}
+		XxlJobInfo xxlJobInfo = null;
+		for (XxlJobGroup xxlJobGroup : all) {
+			if(!Objects.equals(appName, xxlJobGroup.getAppname())){
+				continue;
+			}
+			for (XxlJobInfo job : xxlJobInfos) {
+				if(Objects.equals(executorHandler, job.getExecutorHandler())){
+					if(xxlJobInfo != null){
+						return new ReturnT<>(ReturnT.FAIL_CODE, "jobInfo has more than one");
+					}
+					xxlJobInfo = job;
+				}
+			}
+		}
+		if(xxlJobInfo == null){
+			return new ReturnT<>(ReturnT.FAIL_CODE, "jobInfo not found");
+		}
+		// trigger
+		return xxlJobService.trigger(loginUser, xxlJobInfo.getId(), executorParam, addressList);
 	}
 
 	@RequestMapping("/nextTriggerTime")

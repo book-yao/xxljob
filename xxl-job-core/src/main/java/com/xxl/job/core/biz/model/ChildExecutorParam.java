@@ -1,29 +1,44 @@
 package com.xxl.job.core.biz.model;
 
+import java.io.Serializable;
+
 /**
  * @author jiangwangfa
  * @date 2025/1/13
  * @description
  */
-public class ChildExecutorParam {
-    private boolean apply;
-    private boolean execChildJob = true;
+public class ChildExecutorParam implements Serializable {
+    private static final long serialVersionUID = 1024001L;
+    /**
+     * 是否应用参数
+     */
+    private boolean paramApply;
+    /**
+     * 是否不执行子任务
+     */
+    private boolean nonExecChildJob;
     private String param;
 
     public ChildExecutorParam() {
     }
 
-    public ChildExecutorParam(boolean apply, String param) {
-        this.apply = apply;
+    public static ChildExecutorParam nonExecChildJob() {
+        ChildExecutorParam childExecutorParam = new ChildExecutorParam();
+        childExecutorParam.setNonExecChildJob(true);
+        return childExecutorParam;
+    }
+
+    public ChildExecutorParam(String param) {
+        this.paramApply = true;
         this.param = param;
     }
 
-    public boolean isApply() {
-        return apply;
+    public boolean isParamApply() {
+        return paramApply;
     }
 
-    public void setApply(boolean apply) {
-        this.apply = apply;
+    public void setParamApply(boolean paramApply) {
+        this.paramApply = paramApply;
     }
 
     public String getParam() {
@@ -34,11 +49,11 @@ public class ChildExecutorParam {
         this.param = param;
     }
 
-    public boolean isExecChildJob() {
-        return execChildJob;
+    public boolean isNonExecChildJob() {
+        return nonExecChildJob;
     }
 
-    public void setExecChildJob(boolean execChildJob) {
-        this.execChildJob = execChildJob;
+    public void setNonExecChildJob(boolean nonExecChildJob) {
+        this.nonExecChildJob = nonExecChildJob;
     }
 }

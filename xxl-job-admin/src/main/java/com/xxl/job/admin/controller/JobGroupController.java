@@ -97,9 +97,12 @@ public class JobGroupController {
 			}
 		}
 
+		List<XxlJobGroup> list = xxlJobGroupDao.list(xxlJobGroup.getAppname());
+		if(!list.isEmpty()){
+			return new ReturnT<String>(500, I18nUtil.getString("jobgroup_repeat"));
+		}
 		// process
 		xxlJobGroup.setUpdateTime(new Date());
-
 		int ret = xxlJobGroupDao.save(xxlJobGroup);
 		return (ret>0)?ReturnT.SUCCESS:ReturnT.FAIL;
 	}

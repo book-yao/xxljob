@@ -61,5 +61,5 @@ public interface XxlJobInfoDao {
 	 */
 	public int scheduleUpdate(XxlJobInfo xxlJobInfo);
 
-
+	List<XxlJobInfo> listJobsByExecutorHandler(@Param("executorHandler") String executorHandler);
 }
