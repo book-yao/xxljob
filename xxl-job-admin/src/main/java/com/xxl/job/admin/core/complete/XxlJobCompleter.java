@@ -58,16 +58,15 @@ public class XxlJobCompleter {
                 for (int i = 0; i < childJobIds.length; i++) {
                     int childJobId = (childJobIds[i]!=null && childJobIds[i].trim().length()>0 && isNumeric(childJobIds[i]))?Integer.valueOf(childJobIds[i]):-1;
                     if (childJobId > 0) {
-                        // valid
-                        if (childJobId == xxlJobLog.getJobId()) {
-                            logger.debug(">>>>>>>>>>> xxl-job, XxlJobCompleter-finishJob ignore childJobId,  childJobId {} is self.", childJobId);
-                            continue;
-                        }
-
                         // trigger child job
                         ChildExecutorParam childExecutorParam = JacksonUtil.readValue(xxlJobLog.getHandleMsg(), ChildExecutorParam.class);
                         if(childExecutorParam != null && childExecutorParam.isNonExecChildJob()){
                             logger.info(">>>>>>>>>>> xxl-job, XxlJobCompleter-finishJob ignore childJobId,  parentJobId {} command non exec childJob.", xxlJobLog.getJobId());
+                            continue;
+                        }
+                        // valid
+                        if (childJobId == xxlJobLog.getJobId() && (childExecutorParam == null || !childExecutorParam.isEnableSelfChild())) {
+                            logger.debug(">>>>>>>>>>> xxl-job, XxlJobCompleter-finishJob ignore childJobId,  childJobId {} is self.", childJobId);
                             continue;
                         }
                         String executorParam = null;

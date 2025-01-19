@@ -14,6 +14,10 @@ public class ChildExecutorParam implements Serializable {
      */
     private boolean paramApply;
     /**
+     * 支持自身子任务执行,默认false
+     */
+    private boolean enableSelfChild;
+    /**
      * 是否不执行子任务
      */
     private boolean nonExecChildJob;
@@ -55,5 +59,13 @@ public class ChildExecutorParam implements Serializable {
 
     public void setNonExecChildJob(boolean nonExecChildJob) {
         this.nonExecChildJob = nonExecChildJob;
+    }
+
+    public boolean isEnableSelfChild() {
+        return enableSelfChild;
+    }
+
+    public void setEnableSelfChild(boolean enableSelfChild) {
+        this.enableSelfChild = enableSelfChild;
     }
 }
