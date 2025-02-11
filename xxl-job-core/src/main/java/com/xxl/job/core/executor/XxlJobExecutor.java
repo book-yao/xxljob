@@ -20,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -283,6 +284,7 @@ public class XxlJobExecutor  {
             return new ReturnT<>(ReturnT.FAIL_CODE, "adminAddresses is null");
         }
         ReturnT<String> triggerResult = null;
+        Collections.shuffle(adminBizList);
         for (AdminBiz adminBiz : adminBizList) {
             try{
                 triggerResult  = adminBiz.trigger(triggerParam);

@@ -75,7 +75,9 @@ public class SampleXxlJob {
         }
 //        ChildExecutorParam childExecutorParam = new ChildExecutorParam(false, "{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
 //        String param = GsonTool.toJson(childExecutorParam);
-//        XxlJobHelper.handleSuccess();
+//        XxlJobHelper.handleSuccess(param);
+
+
         CustomTriggerParam customTriggerParam = new CustomTriggerParam();
 //        customTriggerParam.setJobId(1);
         customTriggerParam.setExecutorParams("asdasd");

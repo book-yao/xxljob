@@ -2,9 +2,12 @@ package com.xxl.job.admin.core.util;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +25,12 @@ public class JacksonUtil {
 	private static Logger logger = LoggerFactory.getLogger(JacksonUtil.class);
 
     private final static ObjectMapper objectMapper = new ObjectMapper();
+
+	static {
+		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+		objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
+	}
     public static ObjectMapper getInstance() {
         return objectMapper;
     }
@@ -55,6 +64,9 @@ public class JacksonUtil {
      * @throws Exception
      */
     public static <T> T readValue(String jsonStr, Class<T> clazz) {
+		if(StringUtils.isBlank(jsonStr)){
+			return null;
+		}
     	try {
 			return getInstance().readValue(jsonStr, clazz);
 		} catch (JsonParseException e) {
