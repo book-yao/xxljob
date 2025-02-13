@@ -179,7 +179,11 @@ public class EmbedServer {
                     && !accessToken.equals(accessTokenReq)) {
                 return new ReturnT<String>(ReturnT.FAIL_CODE, "The access token is wrong.");
             }
+            // 查找最后一个斜杠的位置
+            int lastSlashIndex = uri.lastIndexOf('/');
 
+            // 提取从最后一个斜杠开始的部分
+             uri = uri.substring(lastSlashIndex);
             // services mapping
             try {
                 switch (uri) {
