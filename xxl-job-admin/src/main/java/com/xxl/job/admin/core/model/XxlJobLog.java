@@ -33,6 +33,18 @@ public class XxlJobLog {
 
 	// alarm info
 	private int alarmStatus;
+	/**
+	 * 最新的处理信息, 不落库，只内存中操作
+	 */
+	private String latestHandleMsg;
+
+	public String getLatestHandleMsg() {
+		return latestHandleMsg;
+	}
+
+	public void setLatestHandleMsg(String latestHandleMsg) {
+		this.latestHandleMsg = latestHandleMsg;
+	}
 
 	public long getId() {
 		return id;

@@ -61,7 +61,7 @@ public class XxlJobCompleter {
                     if (childJobId > 0) {
                         String executorParam = null;
                         // trigger child job
-                        ChildExecutorParam childExecutorParam = JacksonUtil.readValue(xxlJobLog.getHandleMsg(), ChildExecutorParam.class);
+                        ChildExecutorParam childExecutorParam = JacksonUtil.readValue(xxlJobLog.getLatestHandleMsg(), ChildExecutorParam.class);
                         if(childExecutorParam != null && childExecutorParam.isNonExecChildJob()){
                             logger.info(">>>>>>>>>>> xxl-job, XxlJobCompleter-finishJob ignore childJobId,  parentJobId {} command non exec childJob.", xxlJobLog.getJobId());
                             continue;
@@ -82,7 +82,9 @@ public class XxlJobCompleter {
                                 executorParam = xxlJobLog.getExecutorParam();
                             }
                         }
-
+                        logger.info("父任务 handler:{}, 父任务:{}, 父任务lodId:{}, 触发子任务:{}, 执行参数:{}, 父任务参数:{}, 父任务latestHandleMsg:{}",
+                                xxlJobLog.getExecutorHandler(), xxlJobLog.getJobId(), xxlJobLog.getId(), childJobId, executorParam,
+                                xxlJobLog.getExecutorParam(), xxlJobLog.getLatestHandleMsg());
                         JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, executorParam, null);
                         ReturnT<String> triggerChildResult = ReturnT.SUCCESS;
 

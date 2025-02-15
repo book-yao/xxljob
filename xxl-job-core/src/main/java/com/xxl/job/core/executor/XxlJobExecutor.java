@@ -289,7 +289,7 @@ public class XxlJobExecutor  {
             try{
                 triggerResult  = adminBiz.trigger(triggerParam);
                 if (triggerResult!=null && ReturnT.SUCCESS_CODE == triggerResult.getCode()) {
-                    logger.info(">>>>>>>>>>> xxl-job triggerJob success, triggerParam:{}, triggerResult:{}", new Object[]{triggerParam, triggerResult});
+                    logger.debug(">>>>>>>>>>> xxl-job triggerJob success, triggerParam:{}, triggerResult:{}", new Object[]{triggerParam, triggerResult});
                     break;
                 } else {
                     logger.info(">>>>>>>>>>> xxl-job triggerJob fail, triggerParam:{}, triggerResult:{}", new Object[]{triggerParam, triggerResult});

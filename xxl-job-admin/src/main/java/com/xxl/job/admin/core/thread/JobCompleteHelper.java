@@ -167,6 +167,7 @@ public class JobCompleteHelper {
 			handleMsg.append(log.getHandleMsg()).append("<br>");
 		}
 		if (handleCallbackParam.getHandleMsg() != null) {
+			log.setLatestHandleMsg(handleCallbackParam.getHandleMsg());
 			handleMsg.append(handleCallbackParam.getHandleMsg());
 		}
 
@@ -174,6 +175,7 @@ public class JobCompleteHelper {
 		log.setHandleTime(new Date());
 		log.setHandleCode(handleCallbackParam.getHandleCode());
 		log.setHandleMsg(handleMsg.toString());
+
 		XxlJobCompleter.updateHandleInfoAndFinish(log);
 
 		return ReturnT.SUCCESS;

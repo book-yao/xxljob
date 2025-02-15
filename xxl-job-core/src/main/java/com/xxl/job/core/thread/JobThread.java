@@ -198,6 +198,9 @@ public class JobThread extends Thread{
 				StringWriter stringWriter = new StringWriter();
 				e.printStackTrace(new PrintWriter(stringWriter));
 				String errorMsg = stringWriter.toString();
+				String param = triggerParam != null ? triggerParam.getExecutorParams() : null;
+				String executorHandler = triggerParam != null ? triggerParam.getExecutorHandler() : null;
+				logger.error("xxl-job handler:"+executorHandler+" execute error, executorParams:" + param, e);
 
 				XxlJobHelper.handleFail(errorMsg);
 
