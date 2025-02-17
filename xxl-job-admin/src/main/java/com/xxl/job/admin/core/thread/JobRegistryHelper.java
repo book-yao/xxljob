@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * job registry instance
@@ -107,6 +108,11 @@ public class JobRegistryHelper {
 								XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().update(group);
 							}
 						}
+
+						// 注册admin
+						RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.ADMIN.name(),
+								XxlJobAdminConfig.getAdminConfig().getAdminName(), XxlJobAdminConfig.getAdminConfig().getAdminAddress());
+						registry(registryParam);
 					} catch (Throwable e) {
 						if (!toStop) {
 							logger.error(">>>>>>>>>>> xxl-job, job registry monitor thread error:{}", e);
@@ -174,7 +180,12 @@ public class JobRegistryHelper {
 				}*/
 			}
 		});
-
+		// 执行器注册
+		if(RegistryConfig.RegistType.EXECUTOR.name().equals(registryParam.getRegistryGroup())){
+			List<XxlJobRegistry> registryAdminList = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAllByGroup(RegistryConfig.DEAD_TIMEOUT, new Date(), RegistryConfig.RegistType.ADMIN.name());
+			String adminAddress = registryAdminList.stream().map(XxlJobRegistry::getRegistryValue).collect(Collectors.joining(","));
+			return new ReturnT<>(adminAddress);
+		}
 		return ReturnT.SUCCESS;
 	}
 

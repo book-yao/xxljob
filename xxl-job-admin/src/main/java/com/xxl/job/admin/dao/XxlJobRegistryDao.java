@@ -21,6 +21,10 @@ public interface XxlJobRegistryDao {
     public List<XxlJobRegistry> findAll(@Param("timeout") int timeout,
                                         @Param("nowTime") Date nowTime);
 
+    List<XxlJobRegistry> findAllByGroup(@Param("timeout") int timeout,
+                                 @Param("nowTime") Date nowTime,
+                                        @Param("registryGroup") String registryGroup);
+
     public int registrySaveOrUpdate(@Param("registryGroup") String registryGroup,
                             @Param("registryKey") String registryKey,
                             @Param("registryValue") String registryValue,

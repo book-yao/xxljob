@@ -36,6 +36,9 @@ public class AdminBizClient implements AdminBiz {
     String accessToken;
     int timeout;
 
+    public String getAddressUrl() {
+        return addressUrl;
+    }
 
     @Override
     public ReturnT<String> callback(List<HandleCallbackParam> callbackParamList) {

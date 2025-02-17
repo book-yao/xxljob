@@ -70,6 +70,28 @@ public class XxlJobAdminConfig implements InitializingBean, DisposableBean {
     @Value("${xxl.job.logretentiondays}")
     private int logretentiondays;
 
+    @Value("${xxl.job.adminAddress:}")
+    private String adminAddress;
+
+    @Value("${xxl.job.adminName:}")
+    private String adminName;
+
+    public String getAdminName() {
+        return adminName;
+    }
+
+    public void setAdminName(String adminName) {
+        this.adminName = adminName;
+    }
+
+    public String getAdminAddress() {
+        return adminAddress;
+    }
+
+    public void setAdminAddress(String adminAddress) {
+        this.adminAddress = adminAddress;
+    }
+
     // dao, service
 
     @Resource
@@ -88,7 +110,6 @@ public class XxlJobAdminConfig implements InitializingBean, DisposableBean {
     private DataSource dataSource;
     @Resource
     private JobAlarmer jobAlarmer;
-
 
     public String getI18n() {
         if (!Arrays.asList("zh_CN", "zh_TC", "en").contains(i18n)) {

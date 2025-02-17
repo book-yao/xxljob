@@ -1,13 +1,18 @@
 package com.xxl.job.core.thread;
 
 import com.xxl.job.core.biz.AdminBiz;
+import com.xxl.job.core.biz.client.AdminBizClient;
 import com.xxl.job.core.biz.model.RegistryParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.enums.RegistryConfig;
 import com.xxl.job.core.executor.XxlJobExecutor;
+import com.xxl.job.core.util.SpringBeanUtils;
+import org.apache.groovy.parser.antlr4.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,6 +52,7 @@ public class ExecutorRegistryThread {
                             try {
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
                                 if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
+                                    refreshAdmin(registryResult.getContent());
                                     registryResult = ReturnT.SUCCESS;
                                     logger.debug(">>>>>>>>>>> xxl-job registry success, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
                                     break;
@@ -109,6 +115,39 @@ public class ExecutorRegistryThread {
         registryThread.setDaemon(true);
         registryThread.setName("xxl-job, executor ExecutorRegistryThread");
         registryThread.start();
+    }
+
+    private void refreshAdmin(String adminAddress){
+        try {
+            if(StringUtils.isEmpty(adminAddress)){
+                return;
+            }
+            if(logger.isDebugEnabled()){
+                logger.info(">>>>>>>>>>> xxl-job refresh admin address success, adminAddress:{}", adminAddress);
+            }
+            XxlJobExecutor xxlJobExecutor = SpringBeanUtils.getBean(XxlJobExecutor.class);
+            if(xxlJobExecutor == null){
+                return;
+            }
+
+            xxlJobExecutor.initAdminBizList(adminAddress, xxlJobExecutor.getAccessToken(), xxlJobExecutor.getTimeout());
+
+            if(logger.isDebugEnabled()){
+                List<AdminBiz> adminBizList = XxlJobExecutor.getAdminBizList();
+                if(adminBizList == null){
+                    logger.debug(">>>>>>>>>>> xxl-job refresh admin address success, new adminAddress is null}");
+                    return;
+                }
+                for(AdminBiz adminBiz: adminBizList){
+                    if(adminBiz instanceof AdminBizClient){
+                        AdminBizClient client = (AdminBizClient) adminBiz;
+                        logger.debug(">>>>>>>>>>> xxl-job refresh admin address success, new adminAddress:{}", client.getAddressUrl());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error(">>>>>>>>>>> xxl-job, refreshAdmin error", e);
+        }
     }
 
     public void toStop() {
