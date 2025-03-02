@@ -1,6 +1,7 @@
 package com.xxl.job.core.handler.impl;
 
 import com.xxl.job.core.handler.IJobHandler;
+import com.xxl.job.core.handler.annotation.XxlJob;
 
 import java.lang.reflect.Method;
 
@@ -44,6 +45,15 @@ public class MethodJobHandler extends IJobHandler {
         if(destroyMethod != null) {
             destroyMethod.invoke(target);
         }
+    }
+
+    @Override
+    public int executeThreadNum() {
+        XxlJob annotation = this.method.getAnnotation(XxlJob.class);
+        if(annotation != null){
+            return annotation.executeThreadNum();
+        }
+        return super.executeThreadNum();
     }
 
     @Override

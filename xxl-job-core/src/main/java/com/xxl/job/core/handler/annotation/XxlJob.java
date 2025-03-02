@@ -27,4 +27,10 @@ public @interface XxlJob {
      */
     String destroy() default "";
 
+    /**
+     * executor thread number, max num is 20.
+     * @return
+     */
+    int executeThreadNum() default 1;
+
 }

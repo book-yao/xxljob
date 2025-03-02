@@ -34,5 +34,9 @@ public abstract class IJobHandler {
 		// do something
 	}
 
+	public int executeThreadNum(){
+		return 1;
+	}
+
 
 }

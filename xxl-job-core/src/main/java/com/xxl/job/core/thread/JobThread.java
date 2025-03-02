@@ -33,11 +33,14 @@ public class JobThread extends Thread{
 	private Set<Long> triggerLogIdSet;		// avoid repeat trigger for the same TRIGGER_LOG_ID
 
 	private volatile boolean toStop = false;
-	private String stopReason;
+	private volatile String stopReason;
 
-    private boolean running = false;    // if running job
-	private int idleTimes = 0;			// idle times
-
+    private volatile boolean running = false;    // if running job
+	private volatile int idleTimes = 0;			// idle times
+	/**
+	 * 内部线程池管理
+	 */
+	private ThreadPoolExecutor threadPool;
 
 	public JobThread(int jobId, IJobHandler handler) {
 		this.jobId = jobId;
@@ -47,6 +50,27 @@ public class JobThread extends Thread{
 
 		// assign job thread name
 		this.setName("xxl-job, JobThread-"+jobId+"-"+System.currentTimeMillis());
+		if(handler.executeThreadNum() > 1) {
+			threadPool = new ThreadPoolExecutor(
+					handler.executeThreadNum(),
+					handler.executeThreadNum(),
+					60L,
+					TimeUnit.SECONDS,
+					new LinkedBlockingQueue<Runnable>(2000),
+					new ThreadFactory() {
+						@Override
+						public Thread newThread(Runnable r) {
+							return new Thread(r, "xxl-job, jobThread  pool-" + r.hashCode());
+						}
+					},
+					new RejectedExecutionHandler() {
+						@Override
+						public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+							logger.error(">>>>>>>>>>> xxl-job, jobThread  pool execute rejected, Runnable=" + r.toString());
+							throw new RejectedExecutionException("xxl-job, jobThread pool rejected! ");
+						}
+					});
+		}
 	}
 	public IJobHandler getHandler() {
 		return handler;
@@ -83,6 +107,9 @@ public class JobThread extends Thread{
 		 */
 		this.toStop = true;
 		this.stopReason = stopReason;
+		if(threadPool!=null){
+			threadPool.shutdown();
+		}
 	}
 
     /**
@@ -104,12 +131,61 @@ public class JobThread extends Thread{
 		}
 
 		// execute
+		int threadNum = this.handler.executeThreadNum();
+		if(threadNum > 1){
+			CountDownLatch countDownLatch = new CountDownLatch(threadNum);
+			for (int i = 0; i < threadNum; i++) {
+				threadPool.execute(() -> {
+					try {
+						consumerQueue();
+					}finally {
+						countDownLatch.countDown();
+					}
+				});
+			}
+            try {
+                countDownLatch.wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }else{
+			consumerQueue();
+		}
+
+		// callback trigger request in queue
+		while(triggerQueue !=null && triggerQueue.size()>0){
+			TriggerParam triggerParam = triggerQueue.poll();
+			if (triggerParam!=null) {
+				// is killed
+				TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
+						triggerParam.getLogId(),
+						triggerParam.getLogDateTime(),
+						XxlJobContext.HANDLE_CODE_FAIL,
+						stopReason + " [job not executed, in the job queue, killed.]")
+				);
+			}
+		}
+
+		// destroy
+		try {
+			handler.destroy();
+		} catch (Throwable e) {
+			logger.error(e.getMessage(), e);
+		}
+
+		logger.info(">>>>>>>>>>> xxl-job JobThread stoped, hashCode:{}", Thread.currentThread());
+	}
+
+	/**
+	 * 消费队列任务
+	 */
+	private void consumerQueue(){
 		while(!toStop){
 			running = false;
 			idleTimes++;
 
-            TriggerParam triggerParam = null;
-            try {
+			TriggerParam triggerParam = null;
+			try {
 				// to check toStop signal, we need cycle, so wo cannot use queue.take(), instand of poll(timeout)
 				triggerParam = triggerQueue.poll(3L, TimeUnit.SECONDS);
 				if (triggerParam!=null) {
@@ -206,50 +282,27 @@ public class JobThread extends Thread{
 
 				XxlJobHelper.log("<br>----------- JobThread Exception:" + errorMsg + "<br>----------- xxl-job job execute end(error) -----------");
 			} finally {
-                if(triggerParam != null) {
-                    // callback handler info
-                    if (!toStop) {
-                        // commonm
-                        TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
-                        		triggerParam.getLogId(),
+				if(triggerParam != null) {
+					// callback handler info
+					if (!toStop) {
+						// commonm
+						TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
+								triggerParam.getLogId(),
 								triggerParam.getLogDateTime(),
 								XxlJobContext.getXxlJobContext().getHandleCode(),
 								XxlJobContext.getXxlJobContext().getHandleMsg() )
 						);
-                    } else {
-                        // is killed
-                        TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
-                        		triggerParam.getLogId(),
+					} else {
+						// is killed
+						TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
+								triggerParam.getLogId(),
 								triggerParam.getLogDateTime(),
 								XxlJobContext.HANDLE_CODE_FAIL,
 								stopReason + " [job running, killed]" )
 						);
-                    }
-                }
-            }
-        }
-
-		// callback trigger request in queue
-		while(triggerQueue !=null && triggerQueue.size()>0){
-			TriggerParam triggerParam = triggerQueue.poll();
-			if (triggerParam!=null) {
-				// is killed
-				TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
-						triggerParam.getLogId(),
-						triggerParam.getLogDateTime(),
-						XxlJobContext.HANDLE_CODE_FAIL,
-						stopReason + " [job not executed, in the job queue, killed.]")
-				);
+					}
+				}
 			}
 		}
-
-		// destroy
-		try {
-			handler.destroy();
-		} catch (Throwable e) {
-			logger.error(e.getMessage(), e);
-		}
-
-		logger.info(">>>>>>>>>>> xxl-job JobThread stoped, hashCode:{}", Thread.currentThread());
 	}
 }

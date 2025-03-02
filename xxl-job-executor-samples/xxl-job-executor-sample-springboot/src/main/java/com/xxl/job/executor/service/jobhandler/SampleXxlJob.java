@@ -73,9 +73,9 @@ public class SampleXxlJob {
                 XxlJobHelper.log("第 {} 片, 忽略", i);
             }
         }
-//        ChildExecutorParam childExecutorParam = new ChildExecutorParam(false, "{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
-//        String param = GsonTool.toJson(childExecutorParam);
-//        XxlJobHelper.handleSuccess(param);
+        ChildExecutorParam childExecutorParam = new ChildExecutorParam("{\"jobId\":\""+XxlJobHelper.getJobId()+"\",\"jobParam\":\""+jobParam+"\"}");
+        String param = GsonTool.toJson(childExecutorParam);
+        XxlJobHelper.handleSuccess(param);
 
 
         CustomTriggerParam customTriggerParam = new CustomTriggerParam();

@@ -82,7 +82,7 @@ public class XxlJobCompleter {
                                 executorParam = xxlJobLog.getExecutorParam();
                             }
                         }
-                        logger.info("父任务 handler:{}, 父任务:{}, 父任务lodId:{}, 触发子任务:{}, 执行参数:{}, 父任务参数:{}, 父任务latestHandleMsg:{}",
+                        logger.info("父任务 handler:{}, 父任务:{}, 父任务logId:{}, 触发子任务:{}, 执行参数:{}, 父任务参数:{}, 父任务latestHandleMsg:{}",
                                 xxlJobLog.getExecutorHandler(), xxlJobLog.getJobId(), xxlJobLog.getId(), childJobId, executorParam,
                                 xxlJobLog.getExecutorParam(), xxlJobLog.getLatestHandleMsg());
                         JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, executorParam, null);
