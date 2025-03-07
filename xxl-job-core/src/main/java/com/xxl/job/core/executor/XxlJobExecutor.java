@@ -204,7 +204,10 @@ public class XxlJobExecutor  {
         return jobHandlerRepository.get(name);
     }
     public static IJobHandler registJobHandler(String name, IJobHandler jobHandler){
+        // 校验一下配置
+        jobHandler.executeThreadNum();
         logger.info(">>>>>>>>>>> xxl-job register jobhandler success, name:{}, jobHandler:{}", name, jobHandler);
+
         return jobHandlerRepository.put(name, jobHandler);
     }
     protected void registJobHandler(XxlJob xxlJob, Object bean, Method executeMethod){

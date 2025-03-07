@@ -2,6 +2,7 @@ package com.xxl.job.core.handler.impl;
 
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
 
@@ -51,6 +52,9 @@ public class MethodJobHandler extends IJobHandler {
     public int executeThreadNum() {
         XxlJob annotation = this.method.getAnnotation(XxlJob.class);
         if(annotation != null){
+            int num = annotation.executeThreadNum();
+            Assert.isTrue(num > 0, "executeThreadNum must more than 0");
+            Assert.isTrue(num <= 20, "executeThreadNum must less than 20");
             return annotation.executeThreadNum();
         }
         return super.executeThreadNum();

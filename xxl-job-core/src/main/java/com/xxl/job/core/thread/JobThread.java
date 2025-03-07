@@ -8,6 +8,7 @@ import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.log.XxlJobFileAppender;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +58,7 @@ public class JobThread extends Thread{
 					60L,
 					TimeUnit.SECONDS,
 					new LinkedBlockingQueue<Runnable>(2000),
-					new ThreadFactory() {
-						@Override
-						public Thread newThread(Runnable r) {
-							return new Thread(r, "xxl-job, jobThread  pool-" + r.hashCode());
-						}
-					},
+					new DefaultThreadFactory("xxl-job, jobThread  pool-jobId[" + jobId + "]"),
 					new RejectedExecutionHandler() {
 						@Override
 						public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
@@ -107,9 +103,10 @@ public class JobThread extends Thread{
 		 */
 		this.toStop = true;
 		this.stopReason = stopReason;
-		if(threadPool!=null){
-			threadPool.shutdown();
+		if(threadPool != null){
+			threadPool.shutdownNow();
 		}
+		logger.info(">>>>>>>>>>> job thread stop, jobId:{}, toStop:{}, stopReason:{}", jobId, toStop, stopReason);
 	}
 
     /**
@@ -129,27 +126,27 @@ public class JobThread extends Thread{
 		} catch (Throwable e) {
     		logger.error(e.getMessage(), e);
 		}
-
-		// execute
-		int threadNum = this.handler.executeThreadNum();
-		if(threadNum > 1){
-			CountDownLatch countDownLatch = new CountDownLatch(threadNum);
-			for (int i = 0; i < threadNum; i++) {
-				threadPool.execute(() -> {
-					try {
-						consumerQueue();
-					}finally {
-						countDownLatch.countDown();
-					}
-				});
+		try{
+			// execute
+			int threadNum = this.handler.executeThreadNum();
+			if(threadNum > 1){
+				CountDownLatch countDownLatch = new CountDownLatch(threadNum);
+				for (int i = 0; i < threadNum; i++) {
+					threadPool.execute(() -> {
+						try {
+							consumerQueue();
+						}finally {
+							countDownLatch.countDown();
+						}
+					});
+				}
+				// 等待所有线程结束
+				countDownLatch.await();
+			}else{
+				consumerQueue();
 			}
-            try {
-                countDownLatch.wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }else{
-			consumerQueue();
+		}catch (Exception e){
+			logger.error(">>>>>>>>>>> xxl-job, job execute error, jobId:{}", jobId, e);
 		}
 
 		// callback trigger request in queue
@@ -172,8 +169,7 @@ public class JobThread extends Thread{
 		} catch (Throwable e) {
 			logger.error(e.getMessage(), e);
 		}
-
-		logger.info(">>>>>>>>>>> xxl-job JobThread stoped, hashCode:{}", Thread.currentThread());
+		logger.info(">>>>>>>>>>> xxl-job jobId {} JobThread stoped, hashCode:{}", this.jobId, Thread.currentThread());
 	}
 
 	/**
@@ -183,6 +179,9 @@ public class JobThread extends Thread{
 		while(!toStop){
 			running = false;
 			idleTimes++;
+			if(jobId == 1){
+				logger.info("test jobId:"+jobId+", idleTimes:"+idleTimes);
+			}
 
 			TriggerParam triggerParam = null;
 			try {
@@ -259,8 +258,9 @@ public class JobThread extends Thread{
 					);
 
 				} else {
-					if (idleTimes > 30) {
+					if (idleTimes > 30 * handler.executeThreadNum()) {
 						if(triggerQueue.size() == 0) {	// avoid concurrent trigger causes jobId-lost
+							logger.info(">>>>>>>>>>> xxl-job, jobId={},toStop={}, triggerQueueSize={}", jobId, toStop, triggerQueue.size());
 							XxlJobExecutor.removeJobThread(jobId, "excutor idle times over limit.");
 						}
 					}
@@ -304,5 +304,6 @@ public class JobThread extends Thread{
 				}
 			}
 		}
+		logger.info(">>>>>>>>>>> xxl-job jobId {} JobThread stoped.", this.jobId);
 	}
 }

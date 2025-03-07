@@ -39,16 +39,30 @@ public class SampleXxlJob {
     /**
      * 1、简单任务示例（Bean模式）
      */
-    @XxlJob("demoJobHandler")
+    @XxlJob(value = "demoJobHandler", executeThreadNum = 3)
     public void demoJobHandler() throws Exception {
         String param = XxlJobHelper.getJobParam();
+        logger.info("demoJobHandler param:{}", param);
         XxlJobHelper.log("XXL-JOB, Hello World. param:{}", param);
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 2; i++) {
             XxlJobHelper.log("beat at:" + i);
             TimeUnit.SECONDS.sleep(2);
         }
         // default success
+    }
+
+    @XxlJob("dispatchHandler")
+    public void dispatch(){
+        for (int i = 0; i < 3; i++) {
+            CustomTriggerParam customTriggerParam = new CustomTriggerParam();
+//        customTriggerParam.setJobId(1);
+            customTriggerParam.setExecutorParams("asdasd-"+i);
+            customTriggerParam.setExecutorHandler("demoJobHandler");
+            customTriggerParam.setAppName("xxl-job-executor-sample");
+            ReturnT<String> stringReturnT = XxlJobExecutor.triggerJob(customTriggerParam);
+        }
+
     }
 
 
