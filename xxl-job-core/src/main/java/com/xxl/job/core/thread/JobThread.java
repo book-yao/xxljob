@@ -179,9 +179,6 @@ public class JobThread extends Thread{
 		while(!toStop){
 			running = false;
 			idleTimes++;
-			if(jobId == 1){
-				logger.info("test jobId:"+jobId+", idleTimes:"+idleTimes);
-			}
 
 			TriggerParam triggerParam = null;
 			try {
