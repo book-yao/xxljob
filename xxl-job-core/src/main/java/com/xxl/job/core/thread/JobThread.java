@@ -57,15 +57,9 @@ public class JobThread extends Thread{
 					handler.executeThreadNum(),
 					60L,
 					TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>(2000),
+					new LinkedBlockingQueue<Runnable>(0),
 					new DefaultThreadFactory("xxl-job, jobThread  pool-jobId[" + jobId + "]"),
-					new RejectedExecutionHandler() {
-						@Override
-						public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-							logger.error(">>>>>>>>>>> xxl-job, jobThread  pool execute rejected, Runnable=" + r.toString());
-							throw new RejectedExecutionException("xxl-job, jobThread pool rejected! ");
-						}
-					});
+					new ThreadPoolExecutor.CallerRunsPolicy());
 		}
 	}
 	public IJobHandler getHandler() {
@@ -219,10 +213,17 @@ public class JobThread extends Thread{
 									return true;
 								}
 							});
-							futureThread = new Thread(futureTask);
-							futureThread.start();
+							// 有线程池，则不需要单独线程运行，本身就在线程内运行
+							if(threadPool != null){
+								Future<?> future = threadPool.submit(futureTask);
+								future.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
+							} else {
+								futureThread = new Thread(futureTask);
+								futureThread.start();
+								Boolean tempResult = futureTask.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
+							}
 
-							Boolean tempResult = futureTask.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
+
 						} catch (TimeoutException e) {
 
 							XxlJobHelper.log("<br>----------- xxl-job job execute timeout");
@@ -231,7 +232,9 @@ public class JobThread extends Thread{
 							// handle result
 							XxlJobHelper.handleTimeout("job execute timeout ");
 						} finally {
-							futureThread.interrupt();
+							if(futureThread != null){
+								futureThread.interrupt();
+							}
 						}
 					} else {
 						// just execute
