@@ -51,13 +51,14 @@ public class JobThread extends Thread{
 
 		// assign job thread name
 		this.setName("xxl-job, JobThread-"+jobId+"-"+System.currentTimeMillis());
-		if(handler.executeThreadNum() > 1) {
+		int executeThreadNum = handler.executeThreadNum();
+		if(executeThreadNum > 1) {
 			threadPool = new ThreadPoolExecutor(
-					handler.executeThreadNum(),
-					handler.executeThreadNum(),
+					executeThreadNum,
+					executeThreadNum + 1,
 					60L,
 					TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>(0),
+					new LinkedBlockingQueue<>(1),
 					new DefaultThreadFactory("xxl-job, jobThread  pool-jobId[" + jobId + "]"),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		}
@@ -140,7 +141,7 @@ public class JobThread extends Thread{
 				consumerQueue();
 			}
 		}catch (Exception e){
-			logger.error(">>>>>>>>>>> xxl-job, job execute error, jobId:{}", jobId, e);
+			logger.error(">>>>>>>>>>> xxl-job, job multi thread execute error, jobId:{}", jobId, e);
 		}
 
 		// callback trigger request in queue

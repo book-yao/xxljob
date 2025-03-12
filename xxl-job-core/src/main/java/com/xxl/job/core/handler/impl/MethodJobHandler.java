@@ -55,7 +55,7 @@ public class MethodJobHandler extends IJobHandler {
             int num = annotation.executeThreadNum();
             Assert.isTrue(num > 0, "executeThreadNum must more than 0");
             Assert.isTrue(num <= 20, "executeThreadNum must less than 20");
-            return annotation.executeThreadNum();
+            return num;
         }
         return super.executeThreadNum();
     }

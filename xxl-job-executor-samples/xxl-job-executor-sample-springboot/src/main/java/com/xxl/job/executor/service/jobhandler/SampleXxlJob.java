@@ -52,7 +52,7 @@ public class SampleXxlJob {
         // default success
     }
 
-    @XxlJob("dispatchHandler")
+    @XxlJob(value = "dispatchHandler", executeThreadNum = 3)
     public void dispatch(){
         for (int i = 0; i < 3; i++) {
             CustomTriggerParam customTriggerParam = new CustomTriggerParam();
@@ -62,6 +62,7 @@ public class SampleXxlJob {
             customTriggerParam.setAppName("xxl-job-executor-sample");
             ReturnT<String> stringReturnT = XxlJobExecutor.triggerJob(customTriggerParam);
         }
+        throw new RuntimeException("1");
 
     }
 
