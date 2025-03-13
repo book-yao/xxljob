@@ -55,10 +55,10 @@ public class JobThread extends Thread{
 		if(executeThreadNum > 1) {
 			threadPool = new ThreadPoolExecutor(
 					executeThreadNum,
-					executeThreadNum + 1,
+					executeThreadNum,
 					60L,
 					TimeUnit.SECONDS,
-					new LinkedBlockingQueue<>(1),
+					new SynchronousQueue<>(),
 					new DefaultThreadFactory("xxl-job, jobThread  pool-jobId[" + jobId + "]"),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 		}
