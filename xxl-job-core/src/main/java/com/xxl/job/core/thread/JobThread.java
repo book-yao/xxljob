@@ -55,7 +55,7 @@ public class JobThread extends Thread{
 		if(executeThreadNum > 1) {
 			threadPool = new ThreadPoolExecutor(
 					executeThreadNum,
-					executeThreadNum,
+					executeThreadNum * 2,
 					60L,
 					TimeUnit.SECONDS,
 					new SynchronousQueue<>(),
