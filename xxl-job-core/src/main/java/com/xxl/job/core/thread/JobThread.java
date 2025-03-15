@@ -14,11 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -36,8 +34,12 @@ public class JobThread extends Thread{
 	private volatile boolean toStop = false;
 	private volatile String stopReason;
 
-    private volatile boolean running = false;    // if running job
+//    private volatile boolean running = false;    // if running job
 	private volatile int idleTimes = 0;			// idle times
+	/**
+	 * 多线程执行状态隔离，防止最后一个任务运行中，其他线程达到最大次数退出
+	 */
+	private final List<AtomicBoolean> multiRunningThreadList;
 	/**
 	 * 内部线程池管理
 	 */
@@ -61,6 +63,10 @@ public class JobThread extends Thread{
 					new SynchronousQueue<>(),
 					new DefaultThreadFactory("xxl-job, jobThread  pool-jobId[" + jobId + "]"),
 					new ThreadPoolExecutor.CallerRunsPolicy());
+		}
+		multiRunningThreadList = new ArrayList<>(executeThreadNum);
+		for (int i = 0; i < executeThreadNum; i++) {
+			multiRunningThreadList.add(new AtomicBoolean(false));
 		}
 	}
 	public IJobHandler getHandler() {
@@ -109,8 +115,17 @@ public class JobThread extends Thread{
      * @return
      */
     public boolean isRunningOrHasQueue() {
-        return running || triggerQueue.size()>0;
+        return isRunning() || triggerQueue.size()>0;
     }
+
+	private boolean isRunning(){
+		for (AtomicBoolean atomicBoolean : multiRunningThreadList) {
+			if (atomicBoolean != null && atomicBoolean.get()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
     @Override
 	public void run() {
@@ -127,9 +142,10 @@ public class JobThread extends Thread{
 			if(threadNum > 1){
 				CountDownLatch countDownLatch = new CountDownLatch(threadNum);
 				for (int i = 0; i < threadNum; i++) {
+					int index = i;
 					threadPool.execute(() -> {
 						try {
-							consumerQueue();
+							consumerQueue(index);
 						}finally {
 							countDownLatch.countDown();
 						}
@@ -138,7 +154,7 @@ public class JobThread extends Thread{
 				// 等待所有线程结束
 				countDownLatch.await();
 			}else{
-				consumerQueue();
+				consumerQueue(0);
 			}
 		}catch (Exception e){
 			logger.error(">>>>>>>>>>> xxl-job, job multi thread execute error, jobId:{}", jobId, e);
@@ -170,9 +186,10 @@ public class JobThread extends Thread{
 	/**
 	 * 消费队列任务
 	 */
-	private void consumerQueue(){
+	private void consumerQueue(int index){
 		while(!toStop){
-			running = false;
+			multiRunningThreadList.get(index).set(false);
+//			running = false;
 			idleTimes++;
 
 			TriggerParam triggerParam = null;
@@ -180,7 +197,8 @@ public class JobThread extends Thread{
 				// to check toStop signal, we need cycle, so wo cannot use queue.take(), instand of poll(timeout)
 				triggerParam = triggerQueue.poll(3L, TimeUnit.SECONDS);
 				if (triggerParam!=null) {
-					running = true;
+//					running = true;
+					multiRunningThreadList.get(index).set(true);
 					idleTimes = 0;
 					triggerLogIdSet.remove(triggerParam.getLogId());
 
@@ -260,7 +278,8 @@ public class JobThread extends Thread{
 
 				} else {
 					if (idleTimes > 30 * handler.executeThreadNum()) {
-						if(triggerQueue.size() == 0) {	// avoid concurrent trigger causes jobId-lost
+						// 所有线程都未执行，则停止线程
+						if(triggerQueue.isEmpty() && !isRunning()) {	// avoid concurrent trigger causes jobId-lost
 							logger.info(">>>>>>>>>>> xxl-job, jobId={},toStop={}, triggerQueueSize={}", jobId, toStop, triggerQueue.size());
 							XxlJobExecutor.removeJobThread(jobId, "excutor idle times over limit.");
 						}
