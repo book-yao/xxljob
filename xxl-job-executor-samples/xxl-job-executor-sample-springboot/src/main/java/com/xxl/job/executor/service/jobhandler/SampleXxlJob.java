@@ -49,6 +49,9 @@ public class SampleXxlJob {
             XxlJobHelper.log("beat at:" + i);
             TimeUnit.SECONDS.sleep(2);
         }
+        XxlJobHelper.handleFail("出错了1111");
+        logger.info("demoJobHandler end");
+        throw new RuntimeException("出差错了");
         // default success
     }
 

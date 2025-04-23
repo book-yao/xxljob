@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -220,29 +221,27 @@ public class JobThread extends Thread{
 					if (triggerParam.getExecutorTimeout() > 0) {
 						// limit timeout
 						Thread futureThread = null;
+						FutureTask<Boolean> futureTask = null;
 						try {
-							FutureTask<Boolean> futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
+							futureTask = new FutureTask<Boolean>(new Callable<Boolean>() {
 								@Override
 								public Boolean call() throws Exception {
 
 									// init job context
 									XxlJobContext.setXxlJobContext(xxlJobContext);
-
 									handler.execute();
 									return true;
 								}
 							});
-							// 有线程池，则不需要单独线程运行，本身就在线程内运行
+							// 有线程池，则不需要单独线程运行，本身就在线程内运行,避免创建线程消耗
 							if(threadPool != null){
-								Future<?> future = threadPool.submit(futureTask);
-								future.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
+								threadPool.submit(futureTask);
 							} else {
 								futureThread = new Thread(futureTask);
 								futureThread.start();
-								Boolean tempResult = futureTask.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
 							}
 
-
+							Boolean tempResult = futureTask.get(triggerParam.getExecutorTimeout(), TimeUnit.SECONDS);
 						} catch (TimeoutException e) {
 
 							XxlJobHelper.log("<br>----------- xxl-job job execute timeout");
@@ -251,6 +250,9 @@ public class JobThread extends Thread{
 							// handle result
 							XxlJobHelper.handleTimeout("job execute timeout ");
 						} finally {
+							if(futureTask != null){
+								futureTask.cancel(true);
+							}
 							if(futureThread != null){
 								futureThread.interrupt();
 							}
@@ -286,17 +288,24 @@ public class JobThread extends Thread{
 					}
 				}
 			} catch (Throwable e) {
+				Throwable throwable = e;
 				if (toStop) {
 					XxlJobHelper.log("<br>----------- JobThread toStop, stopReason:" + stopReason);
+				}
+				if(throwable instanceof ExecutionException){
+					throwable = throwable.getCause();
+				}
+				if(throwable instanceof InvocationTargetException){
+					throwable = ((InvocationTargetException) throwable).getTargetException();
 				}
 
 				// handle result
 				StringWriter stringWriter = new StringWriter();
-				e.printStackTrace(new PrintWriter(stringWriter));
+				throwable.printStackTrace(new PrintWriter(stringWriter));
 				String errorMsg = stringWriter.toString();
 				String param = triggerParam != null ? triggerParam.getExecutorParams() : null;
 				String executorHandler = triggerParam != null ? triggerParam.getExecutorHandler() : null;
-				logger.error("xxl-job handler:"+executorHandler+" execute error, executorParams:" + param, e);
+				logger.error("xxl-job handler:"+executorHandler+" execute error, executorParams:" + param, throwable);
 
 				XxlJobHelper.handleFail(errorMsg);
 
