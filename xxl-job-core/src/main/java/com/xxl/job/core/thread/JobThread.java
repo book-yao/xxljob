@@ -1,6 +1,7 @@
 package com.xxl.job.core.thread;
 
 import com.xxl.job.core.biz.model.HandleCallbackParam;
+import com.xxl.job.core.biz.model.PriorityParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.biz.model.TriggerParam;
 import com.xxl.job.core.context.XxlJobContext;
@@ -8,10 +9,13 @@ import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.log.XxlJobFileAppender;
+import com.xxl.job.core.util.GsonTool;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.groovy.parser.antlr4.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Priority;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -29,7 +33,7 @@ public class JobThread extends Thread{
 
 	private int jobId;
 	private IJobHandler handler;
-	private LinkedBlockingQueue<TriggerParam> triggerQueue;
+	private LinkedBlockingDeque<TriggerParam> triggerQueue;
 	private Set<Long> triggerLogIdSet;		// avoid repeat trigger for the same TRIGGER_LOG_ID
 
 	private volatile boolean toStop = false;
@@ -49,7 +53,7 @@ public class JobThread extends Thread{
 	public JobThread(int jobId, IJobHandler handler) {
 		this.jobId = jobId;
 		this.handler = handler;
-		this.triggerQueue = new LinkedBlockingQueue<TriggerParam>();
+		this.triggerQueue = new LinkedBlockingDeque<TriggerParam>();
 		this.triggerLogIdSet = Collections.synchronizedSet(new HashSet<Long>());
 
 		// assign job thread name
@@ -88,6 +92,19 @@ public class JobThread extends Thread{
 		}
 
 		triggerLogIdSet.add(triggerParam.getLogId());
+		try{
+			String executorParams = triggerParam.getExecutorParams();
+			if(!StringUtils.isEmpty(executorParams)){
+				PriorityParam priorityParam = GsonTool.fromJson(executorParams, PriorityParam.class);
+				if(priorityParam != null && priorityParam.isPriority()){
+					triggerQueue.addFirst(triggerParam);
+					return ReturnT.SUCCESS;
+				}
+			}
+		}catch (Exception e){
+			logger.error(e.getMessage(), e);
+		}
+
 		triggerQueue.add(triggerParam);
         return ReturnT.SUCCESS;
 	}
