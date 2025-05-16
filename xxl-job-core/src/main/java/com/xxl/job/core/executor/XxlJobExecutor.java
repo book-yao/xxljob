@@ -3,6 +3,7 @@ package com.xxl.job.core.executor;
 import com.xxl.job.core.biz.AdminBiz;
 import com.xxl.job.core.biz.client.AdminBizClient;
 import com.xxl.job.core.biz.model.CustomTriggerParam;
+import com.xxl.job.core.biz.model.LogParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -320,5 +321,41 @@ public class XxlJobExecutor  {
         }
 
         return triggerResult;
+    }
+
+    /**
+     * 执行日志
+     * @param logParam
+     * @return
+     */
+    public static ReturnT<String> logExeInfo(LogParam logParam){
+        List<AdminBiz> adminBizList = getAdminBizList();
+        if(CollectionUtils.isEmpty(adminBizList)){
+            logger.info(">>>>>>>>>>> xxl-job, executor logExeInfo fail, adminAddresses is null.");
+            return new ReturnT<>(ReturnT.FAIL_CODE, "adminAddresses is null");
+        }
+
+        ReturnT<String> result = null;
+        Collections.shuffle(adminBizList);
+        int size = adminBizList.size();
+        for (int i = 0; i < size; i++) {
+            AdminBiz adminBiz = adminBizList.get(i);
+
+            String addressUrl = null;
+            if (adminBiz instanceof AdminBizClient) {
+                addressUrl = ((AdminBizClient) adminBiz).getAddressUrl();
+            }
+            try {
+                result = adminBiz.logExeInfo(logParam);
+                if (result != null && ReturnT.SUCCESS_CODE == result.getCode()) {
+                    break;
+                }
+                logger.info(">>>>>>>>>>> xxl-job logExeInfo fail, addressUrl:{}, logParam:{}, result:{}", new Object[]{addressUrl, logParam, result});
+            } catch (Exception e) {
+                logger.info(">>>>>>>>>>> xxl-job, executor logExeInfo fail,addressUrl:{}, logParam:{}.", addressUrl, logParam, e);
+            }
+        }
+
+        return result;
     }
 }

@@ -2,6 +2,7 @@ package com.xxl.job.executor.service.jobhandler;
 
 import com.xxl.job.core.biz.model.ChildExecutorParam;
 import com.xxl.job.core.biz.model.CustomTriggerParam;
+import com.xxl.job.core.biz.model.LogParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.executor.XxlJobExecutor;
@@ -57,14 +58,18 @@ public class SampleXxlJob {
 
     @XxlJob(value = "dispatchHandler", executeThreadNum = 3)
     public void dispatch(){
-        for (int i = 0; i < 3; i++) {
-            CustomTriggerParam customTriggerParam = new CustomTriggerParam();
-//        customTriggerParam.setJobId(1);
-            customTriggerParam.setExecutorParams("asdasd-"+i);
-            customTriggerParam.setExecutorHandler("demoJobHandler");
-            customTriggerParam.setAppName("xxl-job-executor-sample");
-            ReturnT<String> stringReturnT = XxlJobExecutor.triggerJob(customTriggerParam);
-        }
+        LogParam logParam = new LogParam();
+        logParam.setLogId(2878472L);
+        ReturnT<String> stringReturnT1 = XxlJobExecutor.logExeInfo(logParam);
+        logger.info("logExeInfo returnT:{}", stringReturnT1);
+//        for (int i = 0; i < 3; i++) {
+//            CustomTriggerParam customTriggerParam = new CustomTriggerParam();
+////        customTriggerParam.setJobId(1);
+//            customTriggerParam.setExecutorParams("asdasd-"+i);
+//            customTriggerParam.setExecutorHandler("demoJobHandler");
+//            customTriggerParam.setAppName("xxl-job-executor-sample");
+//            ReturnT<String> stringReturnT = XxlJobExecutor.triggerJob(customTriggerParam);
+//        }
         throw new RuntimeException("1");
 
     }

@@ -1,10 +1,7 @@
 package com.xxl.job.core.biz.client;
 
 import com.xxl.job.core.biz.AdminBiz;
-import com.xxl.job.core.biz.model.CustomTriggerParam;
-import com.xxl.job.core.biz.model.HandleCallbackParam;
-import com.xxl.job.core.biz.model.RegistryParam;
-import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.biz.model.*;
 import com.xxl.job.core.util.XxlJobRemotingUtil;
 
 import java.util.List;
@@ -58,6 +55,11 @@ public class AdminBizClient implements AdminBiz {
     @Override
     public ReturnT<String> trigger(CustomTriggerParam triggerParam) {
         return XxlJobRemotingUtil.postBody(addressUrl + "api/trigger", accessToken, timeout, triggerParam, String.class);
+    }
+
+    @Override
+    public ReturnT<String> logExeInfo(LogParam logParam) {
+        return XxlJobRemotingUtil.postBody(addressUrl + "api/logExeInfo", accessToken, timeout, logParam, String.class);
     }
 
 }

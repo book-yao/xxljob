@@ -1,7 +1,9 @@
 package com.xxl.job.admin.service.impl;
 
+import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
 import com.xxl.job.admin.core.model.XxlJobGroup;
 import com.xxl.job.admin.core.model.XxlJobInfo;
+import com.xxl.job.admin.core.model.XxlJobLog;
 import com.xxl.job.admin.core.thread.JobCompleteHelper;
 import com.xxl.job.admin.core.thread.JobRegistryHelper;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
@@ -10,10 +12,8 @@ import com.xxl.job.admin.core.util.I18nUtil;
 import com.xxl.job.admin.dao.XxlJobGroupDao;
 import com.xxl.job.admin.dao.XxlJobInfoDao;
 import com.xxl.job.core.biz.AdminBiz;
-import com.xxl.job.core.biz.model.CustomTriggerParam;
-import com.xxl.job.core.biz.model.HandleCallbackParam;
-import com.xxl.job.core.biz.model.RegistryParam;
-import com.xxl.job.core.biz.model.ReturnT;
+import com.xxl.job.core.biz.model.*;
+import com.xxl.job.core.util.GsonTool;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -88,6 +88,16 @@ public class AdminBizImpl implements AdminBiz {
         }
         JobTriggerPoolHelper.trigger(xxlJobInfo.getId(), TriggerTypeEnum.API, -1, executorShardingParam, executorParams, triggerParam.getAddressList());
         return ReturnT.SUCCESS;
+    }
+
+    @Override
+    public ReturnT<String> logExeInfo(LogParam logParam) {
+        XxlJobLog log = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().load(logParam.getLogId());
+        if(log== null){
+            return new ReturnT<>(ReturnT.FAIL_CODE, "log item not found.");
+        }
+        String json = GsonTool.toJson(log);
+        return new ReturnT<>(json);
     }
 
 }
