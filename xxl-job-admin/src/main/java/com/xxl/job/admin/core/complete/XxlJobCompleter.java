@@ -72,15 +72,14 @@ public class XxlJobCompleter {
                             continue;
                         }
 
+                        // 使用父类参数
+                        ParentParam parentParam = JacksonUtil.readValue(xxlJobLog.getExecutorParam(), ParentParam.class);
+                        if(parentParam != null && parentParam.isApplyParentParam()){
+                            executorParam = xxlJobLog.getExecutorParam();
+                        }
+                        // 优先使用子任务参数
                         if(childExecutorParam != null && childExecutorParam.isParamApply()){
                             executorParam = childExecutorParam.getParam();
-                        }
-                        // 使用父类参数
-                        if(executorParam == null){
-                            ParentParam parentParam = JacksonUtil.readValue(xxlJobLog.getExecutorParam(), ParentParam.class);
-                            if(parentParam != null && parentParam.isApplyParentParam()){
-                                executorParam = xxlJobLog.getExecutorParam();
-                            }
                         }
                         logger.info("父任务 handler:{}, 父任务:{}, 父任务logId:{}, 触发子任务:{}, 执行参数:{}, 父任务参数:{}, 父任务latestHandleMsg:{}",
                                 xxlJobLog.getExecutorHandler(), xxlJobLog.getJobId(), xxlJobLog.getId(), childJobId, executorParam,
