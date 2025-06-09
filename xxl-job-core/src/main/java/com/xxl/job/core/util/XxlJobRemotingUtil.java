@@ -140,7 +140,7 @@ public class XxlJobRemotingUtil {
             }
 
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("post error. url:{}, error:{}",url, e.getMessage(), e);
             return new ReturnT<String>(ReturnT.FAIL_CODE, "xxl-job remoting error("+ e.getMessage() +"), for url : " + url);
         } finally {
             try {
