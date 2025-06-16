@@ -5,6 +5,7 @@ import com.xxl.job.core.biz.model.*;
 import com.xxl.job.core.util.XxlJobRemotingUtil;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * admin api test
@@ -62,4 +63,16 @@ public class AdminBizClient implements AdminBiz {
         return XxlJobRemotingUtil.postBody(addressUrl + "api/logExeInfo", accessToken, timeout, logParam, String.class);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AdminBizClient that = (AdminBizClient) o;
+        return timeout == that.timeout && Objects.equals(addressUrl, that.addressUrl) && Objects.equals(accessToken, that.accessToken);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(addressUrl, accessToken, timeout);
+    }
 }

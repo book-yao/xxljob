@@ -125,7 +125,7 @@ public class ExecutorRegistryThread {
             if(logger.isDebugEnabled()){
                 logger.info(">>>>>>>>>>> xxl-job refresh admin address success, adminAddress:{}", adminAddress);
             }
-            XxlJobExecutor xxlJobExecutor = SpringBeanUtils.getBean(XxlJobExecutor.class);
+            XxlJobExecutor xxlJobExecutor = SpringBeanUtils.getBean(XxlJobExecutor.class, null);
             if(xxlJobExecutor == null){
                 return;
             }

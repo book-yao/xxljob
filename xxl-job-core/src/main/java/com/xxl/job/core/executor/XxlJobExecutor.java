@@ -132,27 +132,17 @@ public class XxlJobExecutor  {
     // ---------------------- admin-client (rpc invoker) ----------------------
     private static List<AdminBiz> adminBizList;
     public void initAdminBizList(String adminAddresses, String accessToken, int timeout) throws Exception {
-        Set<String> addressUrlSet = new HashSet<>();
-        boolean flag = false;
         if (adminAddresses!=null && adminAddresses.trim().length()>0) {
             for (String address: adminAddresses.trim().split(",")) {
                 if (address!=null && address.trim().length()>0) {
-                    if(addressUrlSet.contains(address.trim())){
-                       continue;
-                    }
-                    if(!flag){
-                        flag = true;
-                        if(adminBizList != null){
-                            adminBizList.clear();
-                        }
-                    }
                     AdminBiz adminBiz = new AdminBizClient(address.trim(), accessToken, timeout);
 
                     if (adminBizList == null) {
-                        adminBizList = new ArrayList<AdminBiz>();
+                        adminBizList = new ArrayList<>();
                     }
-                    adminBizList.add(adminBiz);
-                    addressUrlSet.add(address.trim());
+                    if(!adminBizList.contains(adminBiz)){
+                        adminBizList.add(adminBiz);
+                    }
                 }
             }
         }

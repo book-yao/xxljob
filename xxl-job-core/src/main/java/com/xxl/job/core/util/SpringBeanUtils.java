@@ -22,6 +22,10 @@ public class SpringBeanUtils implements ApplicationContextAware {
 
     }
 
+    private static boolean check(){
+        return getApplicationContext() != null;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         SpringBeanUtils.applicationContext = applicationContext;
@@ -29,6 +33,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
 
 
     public static <T> T createBean(Class<T> clazz) {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         return applicationContext.getAutowireCapableBeanFactory().createBean(clazz);
     }
 
@@ -43,6 +50,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
      * 获取容器内对象Set列表
      */
     public static <T> Set<T> getBeans(Class<T> clazz) {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         return applicationContext.getBeansOfType(clazz).values().stream().collect(Collectors.toSet());
     }
 
@@ -55,6 +65,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getBean(String name) {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         return (T) applicationContext.getBean(name);
     }
 
@@ -67,6 +80,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
      * @return Bean
      */
     public static <T> T getBean(String name, Class<T> clazz)  {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         return applicationContext.getBean(name, clazz);
     }
 
@@ -78,6 +94,16 @@ public class SpringBeanUtils implements ApplicationContextAware {
      * @return Bean对象
      */
     public static <T> T getBean(Class<T> clazz) {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
+        return applicationContext.getBean(clazz);
+    }
+
+    public static <T> T getBean(Class<T> clazz, T defaultValue) {
+        if(!check()){
+           return defaultValue;
+        }
         return applicationContext.getBean(clazz);
     }
 
@@ -85,6 +111,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
      * 获取当前的环境配置，无配置返回null
      */
     public static String[] getActiveProfiles() {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         Environment env = applicationContext.getEnvironment();
         String[] activeProfiles = env.getActiveProfiles();
         if (activeProfiles.length == 0) {
@@ -97,6 +126,9 @@ public class SpringBeanUtils implements ApplicationContextAware {
      * 获取当前的环境配置，当有多个环境配置时，只获取第一个
      */
     public static String getActiveProfile() {
+        if(!check()){
+            throw new RuntimeException("spring context is not init");
+        }
         String[] activeProfiles = getActiveProfiles();
         if (activeProfiles.length == 0) {
             return null;
