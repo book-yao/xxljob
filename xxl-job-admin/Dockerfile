@@ -1,7 +1,7 @@
 # arm环境
-FROM arm64v8/openjdk:8-jre-slim
+#FROM arm64v8/openjdk:8-jre-slim
 # 非arm架构
-#FROM openjdk:8-jre-slim
+FROM openjdk:8-jre-slim
 #FROM openjdk:8-jdk-alpine
 MAINTAINER xuxueli
 
