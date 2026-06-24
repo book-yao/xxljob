@@ -1,6 +1,7 @@
 package com.xxl.job.core.thread;
 
 import com.xxl.job.core.biz.AdminBiz;
+import com.xxl.job.core.biz.client.AdminBizClient;
 import com.xxl.job.core.biz.model.HandleCallbackParam;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.context.XxlJobContext;
@@ -171,6 +172,11 @@ public class TriggerCallbackThread {
                     callbackRet = true;
                     break;
                 } else {
+                    if(adminBiz instanceof AdminBizClient){
+                        AdminBizClient adminBizClient = (AdminBizClient) adminBiz;
+                        logger.info(">>>>>>>>>>> xxl-job callback fail, addressUrl:{}, callbackResult:{}", new Object[]{adminBizClient.getAddressUrl(), callbackResult});
+                        XxlJobHelper.log(">>>>>>>>>>> xxl-job callback fail, addressUrl:{}, callbackResult:{}", adminBizClient.getAddressUrl(), callbackResult);
+                    }
                     callbackLog(callbackParamList, "<br>----------- xxl-job job callback fail, callbackResult:" + callbackResult);
                 }
             } catch (Throwable e) {

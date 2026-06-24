@@ -57,7 +57,12 @@ public class ExecutorRegistryThread {
                                     logger.debug(">>>>>>>>>>> xxl-job registry success, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
                                     break;
                                 } else {
-                                    logger.info(">>>>>>>>>>> xxl-job registry fail, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
+                                    if(adminBiz instanceof AdminBizClient){
+                                        AdminBizClient adminBizClient = (AdminBizClient) adminBiz;
+                                        logger.info(">>>>>>>>>>> xxl-job registry fail, addressUrl:{}, registryParam:{}, registryResult:{}", new Object[]{adminBizClient.getAddressUrl(), registryParam, registryResult});
+                                    } else{
+                                        logger.info(">>>>>>>>>>> xxl-job registry fail, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
+                                    }
                                 }
                             } catch (Throwable e) {
                                 logger.info(">>>>>>>>>>> xxl-job registry error, registryParam:{}", registryParam, e);
